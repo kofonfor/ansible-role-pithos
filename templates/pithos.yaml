@@ -34,7 +34,7 @@ logging:
 ## global options
 ## --------------
 options:
-  service-uri: 'api.iconjob.co'
+  service-uri: '{{ pithos_service_uri }}'
   reporting: true
   server-side-encryption: true
   multipart-upload: true
