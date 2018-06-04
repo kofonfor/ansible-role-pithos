@@ -1,0 +1,24 @@
+- name: create /opt/pithos
+  file: dest=/opt/pithos state=directory
+
+- name: download Pithos
+  get_url: url=https://github.com/exoscale/pithos/releases/download/{{ pithos_version }}/pithos-{{ pithos_version }}-standalone.jar dest=/opt/pithos/pithos-{{ pithos_version }}-standalone.jar
+
+- name: add pithos user
+  user: name={{ pithos_user }}
+
+- name: create /var/log/pithos
+  file: dest=/var/log/pithos state=directory owner={{ pithos_user }} group={{ pithos_user }}
+
+- name: put pithos.yaml
+  template: src=pithos.yaml dest=/etc/pithos.yaml
+
+- name: put systemd unit file to its destination
+  template: src=pithos.service dest=/etc/systemd/system/pithos.service owner=root group=root mode=0644
+  notify: systemctl daemon-reload
+
+- name: force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers
+
+- name: enable pithos service
+  service: name=pithos enabled=yes state=started

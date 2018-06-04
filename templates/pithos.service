@@ -1,0 +1,14 @@
+[Unit]
+Description=Pithos service
+
+[Service]
+User={{ pithos_user }}
+Group={{ pithos_user }}
+Type=simple
+ExecStart=/usr/bin/java -jar /opt/pithos/pithos-{{ pithos_version }}-standalone.jar -f /etc/pithos.yaml
+StandardOutput=journal
+StandardError=journal
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

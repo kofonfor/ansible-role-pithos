@@ -1,0 +1,110 @@
+#
+## pithos main configuration
+## =========================
+#
+# This file contains the following sections
+#   - service
+#   - logging
+#   - options
+#   - keystore
+#   - bucketstore
+#   - regions
+
+
+## service configuration
+## ---------------------
+#
+# indicates
+service:
+  host: '{{ ansible_default_ipv4.address }}'
+  port: {{ pithos_port }}
+
+
+## logging configuration
+## ---------------------
+logging:
+  level: info
+  console: true
+  files:
+    - "/var/log/pithos/pithos.log"
+# overrides:
+#   io.exo.pithos: debug
+
+
+## global options
+## --------------
+options:
+  service-uri: 'api.iconjob.co'
+  reporting: true
+  server-side-encryption: true
+  multipart-upload: true
+  masterkey-provisioning: true
+  masterkey-access: true
+  default-region: 'CH-GV1'
+
+
+## keystore configuration
+## ----------------------
+#
+# Keystores associate an access key with
+# an organization and secret key.
+#
+# They may offer provisioning capacities with the
+# masterkey. The default provider relies on keys
+# being defined inline.
+keystore:
+  keys:
+    {{ pithos_keystore_masterkey }}:
+# The master key allows provisinning operations
+# when the masterkey-provisioning feature is
+# set to true and will allow access to all
+# buckets when masterkey-access is set to true
+      master: true
+      tenant: 'master'
+      secret: '{{ pithos_keystore_mastersecret }}'
+{% for tenant in pithos_keystore_tenants %}
+    {{ tenant["tenant_key"] }}:
+      tenant: '{{ tenant["tenant_name"] }}'
+      secret: '{{ tenant["tenant_secret"] }}'
+{% endfor %}
+
+
+## bucketstore configuration
+## -------------------------
+#
+# The bucketstore is ring global and contains information
+# on bucket location and global parameters.
+#
+# Its primary aim is to hold bucket location and ownership
+# information.
+#
+# The default provider relies on cassandra.
+bucketstore:
+  default-region: 'CH-GV1'
+  cluster: '{{ ansible_default_ipv4.address }}'
+  keyspace: 'storage'
+
+
+## regions
+## -------
+#
+# Regions are composed of a metastore and an arbitrary number
+# of named storage classes which depend on a blobstore.
+#
+# The metastore holds metadata for the full region, as well as
+# object storage-class placement information.
+#
+# The default implementation of both metastore and blobstore
+# rely on cassandra.
+#
+regions:
+  CH-GV1:
+    metastore:
+      cluster: '{{ ansible_default_ipv4.address }}'
+      keyspace: 'storage'
+    storage-classes:
+      standard:
+        cluster: '{{ ansible_default_ipv4.address }}'
+        keyspace: 'storage'
+        max-chunk: '128k'
+        max-block-chunks: 1024
